@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
+from flask_assets import Bundle, Environment
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
@@ -8,6 +9,12 @@ from flask_bcrypt import Bcrypt
 import os
 
 app = Flask(__name__)
+
+assets = Environment(app)
+css = Bundle("src/main.css", output="dist/main.css")
+
+assets.register("css", css)
+css.build()
 
 # Set the database URI configuration
 database_uri = os.environ.get('SQLALCHEMY_DATABASE_URI') or 'mysql+pymysql://root:@localhost/toko_karunia'
