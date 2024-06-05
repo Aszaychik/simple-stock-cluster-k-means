@@ -1,24 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-
-<body>
-    <h1>Login Page</h1>
-
-    <form method="POST" action="">
-        {{ form.hidden_tag() }}
-        {{ form.username }}
-        {{ form.password }}
-        {{ form.submit }}
-    </form>
-
-    <a href="{{ url_for('register') }}">Don't have an account? Sign Up</a>
-</body>
-
-</html>
+{% extends "base.html" %} {% block content %}
+<section
+  class="flex flex-col items-center justify-center w-screen h-screen bg-gray-200 text-gray-700"
+>
+  <!-- Component Start -->
+  <h1 class="font-bold text-2xl">Welcome</h1>
+  <form
+    method="POST"
+    action=""
+    class="flex flex-col bg-white rounded shadow-lg p-12 mt-12"
+  >
+    {{ form.hidden_tag() }}
+    <label class="font-semibold text-xs" for="usernameField"
+      >Username or Email</label
+    >
+    {{ form.username(class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2
+    rounded focus:outline-none focus:ring-2") }}
+    <label class="font-semibold text-xs mt-3" for="passwordField"
+      >Password</label
+    >
+    {{ form.password(class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2
+    rounded focus:outline-none focus:ring-2") }} {{ form.submit(class="flex
+    items-center justify-center h-12 px-6 w-64 bg-blue-600 mt-8 rounded
+    font-semibold text-sm text-blue-100 hover:bg-blue-700") }}
+    <div class="flex mt-6 justify-center text-xs">
+      <a class="text-blue-400 hover:text-blue-500" href="#">Forgot Password</a>
+      <span class="mx-2 text-gray-300">/</span>
+      <a
+        class="text-blue-400 hover:text-blue-500"
+        href="{{ url_for('register') }}"
+        >Sign Up</a
+      >
+    </div>
+  </form>
+  <!-- Component End -->
+</section>
+{% endblock content %}
