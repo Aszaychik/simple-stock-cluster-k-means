@@ -1,0 +1,4 @@
+ipykernel
+flask
+flask-assets
+pytailwindcss
