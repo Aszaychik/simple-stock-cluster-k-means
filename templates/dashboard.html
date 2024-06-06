@@ -1,6 +1,28 @@
 {% extends "sidebar.html" %} {% block inner_content %}
-<body>
-  <h1>Hello you are logged in.</h1>
-  <a href="{{url_for('logout')}}">Press here to logout</a>
-</body>
+<section class="dark:bg-gray-100 dark:text-gray-800">
+  <div
+    class="container mx-auto flex flex-col items-center px-4 py-16 text-center md:py-32 md:px-10 lg:px-32 xl:max-w-3xl"
+  >
+    <h1 class="text-4xl font-bold leading-none sm:text-5xl">Toko Karunia</h1>
+    <p class="px-8 mt-8 mb-12 text-lg">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis, tempora
+      harum repellendus suscipit fuga ratione atque, praesentium nulla
+      consequuntur reprehenderit mollitia sed dolores dignissimos. Enim deserunt
+      doloremque perferendis placeat delectus!
+    </p>
+    <div class="flex flex-wrap justify-center">
+      <a
+        class="px-8 py-3 m-2 text-lg font-semibold rounded dark:bg-violet-600 dark:text-gray-50"
+        href="/data"
+      >
+        Lihat Data
+      </a>
+      <button
+        class="px-8 py-3 m-2 text-lg border rounded dark:text-gray-900 dark:border-gray-300"
+      >
+        Hitung Data
+      </button>
+    </div>
+  </div>
+</section>
 {% endblock inner_content %}
