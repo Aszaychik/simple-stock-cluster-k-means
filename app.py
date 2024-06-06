@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_assets import Bundle, Environment
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
@@ -6,7 +6,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
+from werkzeug.utils import secure_filename
 import os
+import csv
 
 app = Flask(__name__)
 
@@ -21,6 +23,8 @@ print(f"Database URI: {database_uri}")  # Debugging print statement
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'kayoko_imut'
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['ALLOWED_EXTENSIONS'] = {'csv'}
 
 # Initialize the database
 db = SQLAlchemy(app)
@@ -67,6 +71,10 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
 @app.route('/')
 @login_required
 def home():
@@ -108,6 +116,7 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
+products = []
 
 @app.route('/data')
 def data_table():
@@ -116,5 +125,59 @@ def data_table():
     return render_template('data.html', products=products)
 
 
+@app.route('/klasterisasi')
+def klasterisasi_page():
+    products = Product.query.all()
+    return render_template('klasterisasi.html', products=products)
+
+@app.route('/upload_csv', methods=['POST'])
+@login_required
+def upload_csv():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.url)
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        # Process the CSV file
+        with open(file_path, mode='r') as f:
+            csv_reader = csv.DictReader(f)
+            for row in csv_reader:
+                nama = row['nama'].strip()
+                if not nama:
+                    continue  # Skip rows with empty 'nama'
+
+                stok_awal = int(row['stok_awal'].strip() or 0)
+                stok_terjual = int(row['stok_terjual'].strip() or 0)
+                harga = float(row['harga'].strip() or 0.0)
+
+                product = Product.query.filter_by(nama=nama).first()
+                if product:
+                    product.stok_awal = stok_awal
+                    product.stok_terjual = stok_terjual
+                    product.harga = harga
+                else:
+                    new_product = Product(
+                        nama=nama,
+                        stok_awal=stok_awal,
+                        stok_terjual=stok_terjual,
+                        harga=harga
+                    )
+                    db.session.add(new_product)
+            db.session.commit()
+        flash('File successfully uploaded and data updated')
+        return redirect(url_for('klasterisasi_page'))
+    else:
+        flash('Allowed file types are csv')
+        return redirect(request.url)
+
+
 if __name__ == "__main__":
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
