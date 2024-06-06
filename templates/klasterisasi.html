@@ -19,7 +19,7 @@
   />
 
   <style>
-    /*Overrides for Tailwind CSS */
+    /* Overrides for Tailwind CSS */
     .dataTables_wrapper select,
     .dataTables_wrapper .dataTables_filter input {
       color: #4a5568;
@@ -75,38 +75,56 @@
     table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
       background-color: #667eea !important;
     }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #printableTable,
+      #printableTable * {
+        visibility: visible;
+      }
+
+      #printableTable {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
   </style>
 
   <!-- Container -->
   <div id="recipients" class="p-8 mt-6 lg:mt-0 rounded shadow bg-white">
-    <table
-      id="example"
-      class="stripe hover"
-      style="width: 100%; padding-top: 1em; padding-bottom: 1em"
-    >
-      <thead>
-        <tr>
-          <th data-priority="1">Nama Produk</th>
-          <th data-priority="2">Stok Awal</th>
-          <th data-priority="3">Stok Terjual</th>
-          <th data-priority="4">Harga</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for product in products %}
-        <tr>
-          <td>{{ product.nama }}</td>
-          <td>{{ product.stok_awal }}</td>
-          <td>{{ product.stok_terjual }}</td>
-          <td>{{ product.harga }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div id="printableTable">
+      <table
+        id="example"
+        class="stripe hover"
+        style="width: 100%; padding-top: 1em; padding-bottom: 1em"
+      >
+        <thead>
+          <tr>
+            <th data-priority="1">Nama Produk</th>
+            <th data-priority="2">Stok Awal</th>
+            <th data-priority="3">Stok Terjual</th>
+            <th data-priority="4">Harga</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+          <tr>
+            <td>{{ product.nama }}</td>
+            <td>{{ product.stok_awal }}</td>
+            <td>{{ product.stok_terjual }}</td>
+            <td>{{ product.harga }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
   <!-- /Container -->
-
-  <!-- Upload CSV Button -->
   <div class="mt-4">
     <form
       action="{{ url_for('upload_csv') }}"
@@ -119,12 +137,20 @@
         class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
         id="file_input"
       />
-      <button
-        type="submit"
-        class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        Upload CSV
-      </button>
+      <div class="flex justify-evenly">
+        <button
+          type="submit"
+          class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Upload CSV
+        </button>
+        <button
+          onclick="window.print()"
+          class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+        >
+          Print Table
+        </button>
+      </div>
     </form>
   </div>
 
@@ -137,6 +163,8 @@
   <!-- Datatables -->
   <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+
+  <!-- Custom JS for Printing -->
   <script>
     $(document).ready(function () {
       var table = $('#example')
