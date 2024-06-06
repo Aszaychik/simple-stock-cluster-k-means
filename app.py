@@ -7,6 +7,8 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
+import pandas as pd
+from sklearn.cluster import KMeans
 import os
 import csv
 
@@ -175,6 +177,53 @@ def upload_csv():
     else:
         flash('Allowed file types are csv')
         return redirect(request.url)
+
+
+
+@app.route('/cluster')
+@login_required
+def cluster():
+    # Load data from the database
+    products = Product.query.all()
+    data = [(p.stok_awal, p.stok_terjual) for p in products]
+
+    if len(data) < 3:
+        flash('Not enough data for clustering')
+        return redirect(url_for('data_table'))
+
+    # Convert to DataFrame
+    df = pd.DataFrame(data, columns=['stok_awal', 'stok_terjual'])
+
+    # Perform KMeans clustering
+    kmeans = KMeans(n_clusters=3)
+    kmeans.fit(df)
+    df['cluster'] = kmeans.labels_
+
+    # Calculate distances and centroids
+    centroids = kmeans.cluster_centers_
+    distances = kmeans.transform(df[['stok_awal', 'stok_terjual']])
+    df['distance_to_centroid'] = distances.min(axis=1)
+
+    # Group data by clusters
+    clusters = {
+        i: {
+            'centroid': centroids[i].tolist(),
+            'products': [
+                {
+                    'nama': product.nama,
+                    'stok_awal': product.stok_awal,
+                    'stok_terjual': product.stok_terjual,
+                    'harga': product.harga,
+                    'distance_to_centroid': df.iloc[idx]['distance_to_centroid']
+                }
+                for idx, product in enumerate(products) if df.iloc[idx]['cluster'] == i
+            ]
+        }
+        for i in range(3)
+    }
+
+    return render_template('clusters.html', clusters=clusters)
+
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {% extends "sidebar.html" %} {% block inner_content %}
 <section class="container w-full md:w-4/5 xl:w-3/5 mx-auto px-2">
-  <title>Klasterisasi</title>
+  <title>Cluster Results</title>
 
   <!-- Tailwind CSS -->
   <link
@@ -95,73 +95,42 @@
     }
   </style>
 
-  <!-- Container -->
-  <div id="recipients" class="p-8 mt-6 lg:mt-0 rounded shadow bg-white">
-    <div id="printableTable">
-      <table
-        id="example"
-        class="stripe hover"
-        style="width: 100%; padding-top: 1em; padding-bottom: 1em"
-      >
-        <thead>
-          <tr>
-            <th data-priority="1">Nama Produk</th>
-            <th data-priority="2">Stok Awal</th>
-            <th data-priority="3">Stok Terjual</th>
-            <th data-priority="4">Harga</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for product in products %}
-          <tr>
-            <td>{{ product.nama }}</td>
-            <td>{{ product.stok_awal }}</td>
-            <td>{{ product.stok_terjual }}</td>
-            <td>{{ product.harga }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <!-- /Container -->
+  <h2 class="text-2xl font-semibold my-4">Cluster Results</h2>
 
-  <!-- Upload CSV Button and Print Button -->
-  <div class="mt-4">
-    <form
-      action="{{ url_for('upload_csv') }}"
-      method="post"
-      enctype="multipart/form-data"
+  {% if clusters %} {% for i, cluster in clusters.items() %}
+  <div class="mt-8">
+    <h3 class="text-xl font-semibold my-2">Cluster {{ i + 1 }}</h3>
+    <p>Centroid: {{ cluster.centroid }}</p>
+    <table
+      id="cluster{{ i }}"
+      class="stripe hover"
+      style="width: 100%; padding-top: 1em; padding-bottom: 1em"
     >
-      <input
-        type="file"
-        name="file"
-        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-        id="file_input"
-      />
-      <div class="flex justify-evenly">
-        <button
-          type="submit"
-          class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Upload CSV
-        </button>
-        <!-- Clustering Button -->
-        <a
-          href="{{ url_for('cluster') }}"
-          class="mt-2 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
-        >
-          Calculate Clustering
-        </a>
-        <button
-          onclick="window.print()"
-          class="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-        >
-          Print Table
-        </button>
-      </div>
-    </form>
+      <thead>
+        <tr>
+          <th>Nama Produk</th>
+          <th>Stok Awal</th>
+          <th>Stok Terjual</th>
+          <th>Harga</th>
+          <th>Distance to Centroid</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in cluster.products %}
+        <tr>
+          <td>{{ product.nama }}</td>
+          <td>{{ product.stok_awal }}</td>
+          <td>{{ product.stok_terjual }}</td>
+          <td>{{ product.harga }}</td>
+          <td>{{ product.distance_to_centroid }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
+  {% endfor %} {% else %}
+  <p>No data available in clusters.</p>
+  {% endif %}
 
   <!-- jQuery -->
   <script
@@ -173,15 +142,14 @@
   <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
 
-  <!-- Custom JS for Printing -->
+  <!-- Initialize Datatables for Each Cluster -->
   <script>
     $(document).ready(function () {
-      var table = $('#example')
-        .DataTable({
-          responsive: true,
-        })
-        .columns.adjust()
-        .responsive.recalc();
+      {% for i in clusters %}
+      $('#cluster{{ i }}').DataTable({
+        responsive: true,
+      }).columns.adjust().responsive.recalc();
+      {% endfor %}
     });
   </script>
 </section>

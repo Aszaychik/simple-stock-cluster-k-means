@@ -26,3 +26,5 @@ Werkzeug
 WTForms
 zipp
 pymysql
+pandas
+scikit-learn
