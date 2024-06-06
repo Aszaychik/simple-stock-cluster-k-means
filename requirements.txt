@@ -28,3 +28,5 @@ zipp
 pymysql
 pandas
 scikit-learn
+seaborn
+matplotlib
