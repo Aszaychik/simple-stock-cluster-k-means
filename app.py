@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 assets = Environment(app)
 css = Bundle("src/main.css", output="dist/main.css")
-
 assets.register("css", css)
 css.build()
 
@@ -43,6 +42,14 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(80), nullable=False)
 
 
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nama = db.Column(db.String(255), nullable=False)
+    stok_awal = db.Column(db.Integer, nullable=False)
+    stok_terjual = db.Column(db.Integer, nullable=False)
+    harga = db.Column(db.Float, nullable=False)
+
+
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
@@ -71,10 +78,9 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user:
-            if bcrypt.check_password_hash(user.password, form.password.data):
-                login_user(user)
-                return redirect(url_for('dashboard'))
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user)
+            return redirect(url_for('dashboard'))
     return render_template('login.html', form=form)
 
 
@@ -94,15 +100,20 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data)
         new_user = User(username=form.username.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
-
     return render_template('register.html', form=form)
+
+
+@app.route('/data')
+def data_table():
+    # Retrieve product data from the database
+    products = Product.query.all()
+    return render_template('data.html', products=products)
 
 
 if __name__ == "__main__":
