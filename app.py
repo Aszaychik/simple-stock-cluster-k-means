@@ -53,7 +53,7 @@ class Product(db.Model):
     nama = db.Column(db.String(255), nullable=False)
     stok_awal = db.Column(db.Integer, nullable=False)
     stok_terjual = db.Column(db.Integer, nullable=False)
-    harga = db.Column(db.Float, nullable=False)
+    harga = db.Column(db.Integer, nullable=False)
 
 
 class RegisterForm(FlaskForm):
