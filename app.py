@@ -126,6 +126,20 @@ def data_table():
     products = Product.query.all()
     return render_template('data.html', products=products)
 
+@app.route('/data/add', methods=['POST'])
+def add_product():
+    product_nama = request.form['product-nama']
+    product_stok_awal = request.form['product-stok-awal']
+    product_stok_terjual = request.form['product-stok-terjual']
+    product_harga = request.form['product-harga']
+
+    new_product = Product(nama=product_nama, stok_awal=product_stok_awal, stok_terjual=product_stok_terjual, harga=product_harga)
+    db.session.add(new_product)
+    db.session.commit()
+
+    symptoms = Product.query.all()
+    return render_template('data.html', symptoms=symptoms)
+
 
 @app.route('/klasterisasi')
 def klasterisasi_page():

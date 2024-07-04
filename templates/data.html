@@ -159,10 +159,102 @@
               <!-- Rest of your data (refer to https://datatables.net/examples/server_side/ for server side processing)-->
             </tbody>
           </table>
+          <div class="text-center">
+            <button
+              data-modal-target="product-modal"
+              data-modal-toggle="product-modal"
+              class="mt-2 px-4 py-2 bg-blue-400 text-white rounded-md hover:bg-blue-500 add-product"
+            >
+              Tambah Data
+            </button>
+          </div>
         </div>
         <!--/Card-->
       </div>
       <!--/container-->
+
+      <!-- Modal for adding/updating -->
+      <div
+        id="product-modal"
+        class="fixed inset-0 z-50 overflow-auto bg-gray-800 bg-opacity-50 hidden"
+      >
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="bg-white rounded-lg p-8 w-1/2">
+            <h2 class="text-xl font-bold mb-6" id="modal-title">
+              Tambah Produk
+            </h2>
+            <form id="product-form">
+              <div class="mb-4">
+                <label
+                  for="product-nama"
+                  class="block text-sm font-medium text-gray-700"
+                  >Nama Produk:</label
+                >
+                <input
+                  type="text"
+                  id="product-nama"
+                  name="product-nama"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  for="product-stok-awal"
+                  class="block text-sm font-medium text-gray-700"
+                  >Stok Awal:</label
+                >
+                <input
+                  type="text"
+                  id="product-stok-awal"
+                  name="product-stok-awal"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  for="product-stok-terjual"
+                  class="block text-sm font-medium text-gray-700"
+                  >Stok Terjual:</label
+                >
+                <input
+                  type="text"
+                  id="product-stok-terjual"
+                  name="product-stok-terjual"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  for="product-harga"
+                  class="block text-sm font-medium text-gray-700"
+                  >Harga:</label
+                >
+                <input
+                  type="text"
+                  id="product-harga"
+                  name="product-harga"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  class="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600"
+                >
+                  Submit
+                </button>
+                <button
+                  type="button"
+                  class="ml-2 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  data-modal-close="product-modal"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
 
       <!-- jQuery -->
       <script
@@ -175,12 +267,72 @@
       <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
       <script>
         $(document).ready(function () {
-          var table = $('#example')
-            .DataTable({
-              responsive: true,
-            })
-            .columns.adjust()
-            .responsive.recalc();
+          var table = $('#example').DataTable({
+            responsive: true,
+          });
+
+          // Toggle modal visibility for adding
+          $('.add-product').on('click', function () {
+            $('#product-modal').toggleClass('hidden');
+            $('#modal-title').text('Tambah Product');
+            $('#product-form').attr('data-action', 'add');
+            $('#product-nama').val('');
+            $('#product-stok-awal').val('');
+            $('#product-stok-terjual').val('');
+            $('#product-harga').val('');
+          });
+
+          // Toggle modal visibility for updating
+          $('.edit-product').on('click', function () {
+            $('#product-modal').toggleClass('hidden');
+            $('#modal-title').text('Update product');
+            $('#product-form').attr('data-action', 'update');
+            var row = $(this).closest('tr');
+            var productNama = row.find('td:eq(0)').text().trim(); // Assuming second column is product nama
+            var productStokAwal = row.find('td:eq(1)').text().trim();
+            var productStokTerjual = row.find('td:eq(2)').text().trim();
+            var productHarga = row.find('td:eq(3)').text().trim();
+            $('#product-nama').val(productNama);
+            $('#product-stok-awal').val(productStokAwal);
+            $('#product-stok-terjual').val(productStokTerjual);
+            $('#product-harga').val(productHarga);
+          });
+
+          // Close modal on cancel button click
+          $('[data-modal-close="product-modal"]').on('click', function () {
+            $('#product-modal').addClass('hidden');
+            $('#product-id').prop('readonly', false);
+          });
+
+          // Handle form submission (add/update action)
+          $('#product-form').on('submit', function (event) {
+            event.preventDefault();
+
+            // Serialize form data
+            var formData = $(this).serialize();
+            var action = $(this).attr('data-action');
+
+            // Determine URL based on action
+            var url = action === 'add' ? '/data/add' : '/data';
+
+            // AJAX request
+            $.ajax({
+              type: 'POST',
+              url: url,
+              data: formData,
+              success: function (response) {
+                // Handle success response
+                // Optionally, update UI or show messages
+                $('#product-modal').addClass('hidden');
+                location.reload(); // Reload the page to reflect changes
+              },
+              error: function (error) {
+                // Handle error
+                console.error('Error:', error);
+                // Optionally, show error messages
+              },
+            });
+          });
         });
       </script>
     </body>
