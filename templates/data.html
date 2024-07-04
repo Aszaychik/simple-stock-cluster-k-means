@@ -140,19 +140,45 @@
           >
             <thead>
               <tr>
-                <th data-priority="1">Nama Produk</th>
-                <th data-priority="2">Stok Awal</th>
-                <th data-priority="3">Stok Terjual</th>
-                <th data-priority="4">Harga</th>
+                <th data-priority="1">ID</th>
+                <th data-priority="2">Nama Produk</th>
+                <th data-priority="3">Stok Awal</th>
+                <th data-priority="4">Stok Terjual</th>
+                <th data-priority="5">Harga</th>
+                <th data-priority="6">Action</th>
               </tr>
             </thead>
             <tbody>
               {% for product in products %}
               <tr>
+                <td>{{ product.id }}</td>
                 <td>{{ product.nama }}</td>
                 <td>{{ product.stok_awal }}</td>
                 <td>{{ product.stok_terjual }}</td>
                 <td>{{ product.harga }}</td>
+                <td class="flex justify-around">
+                  <button
+                    data-modal-target="product-modal"
+                    data-modal-toggle="product-modal"
+                    data-product-id="{{ product.id }}"
+                    class="edit-product"
+                  >
+                    <img
+                      src="{{ url_for('static', filename='assets/edit.png') }}"
+                      alt="Edit"
+                    />
+                  </button>
+
+                  <a
+                    href="{{ url_for('delete_product', product_id=product.id) }}"
+                    onclick="return confirm('Are you sure you want to delete this product?');"
+                  >
+                    <img
+                      src="{{ url_for('static', filename='assets/delete.png') }}"
+                      alt="Delete"
+                    />
+                  </a>
+                </td>
               </tr>
               {% endfor %}
 
@@ -184,6 +210,19 @@
               Tambah Produk
             </h2>
             <form id="product-form">
+              <div class="mb-4">
+                <label
+                  for="product-id"
+                  class="block text-sm font-medium text-gray-700"
+                  >ID:</label
+                >
+                <input
+                  type="text"
+                  id="product-id"
+                  name="product-id"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
               <div class="mb-4">
                 <label
                   for="product-nama"
@@ -276,6 +315,7 @@
             $('#product-modal').toggleClass('hidden');
             $('#modal-title').text('Tambah Product');
             $('#product-form').attr('data-action', 'add');
+            $('#product-id').val('');
             $('#product-nama').val('');
             $('#product-stok-awal').val('');
             $('#product-stok-terjual').val('');
@@ -288,10 +328,12 @@
             $('#modal-title').text('Update product');
             $('#product-form').attr('data-action', 'update');
             var row = $(this).closest('tr');
-            var productNama = row.find('td:eq(0)').text().trim(); // Assuming second column is product nama
-            var productStokAwal = row.find('td:eq(1)').text().trim();
-            var productStokTerjual = row.find('td:eq(2)').text().trim();
-            var productHarga = row.find('td:eq(3)').text().trim();
+            var productId = row.find('td:eq(0)').text().trim();
+            var productNama = row.find('td:eq(1)').text().trim(); // Assuming second column is product nama
+            var productStokAwal = row.find('td:eq(2)').text().trim();
+            var productStokTerjual = row.find('td:eq(3)').text().trim();
+            var productHarga = row.find('td:eq(4)').text().trim();
+            $('#product-id').val(productId);
             $('#product-nama').val(productNama);
             $('#product-stok-awal').val(productStokAwal);
             $('#product-stok-terjual').val(productStokTerjual);
@@ -313,7 +355,10 @@
             var action = $(this).attr('data-action');
 
             // Determine URL based on action
-            var url = action === 'add' ? '/data/add' : '/data';
+            var url =
+              action === 'add'
+                ? '/data/add'
+                : '/data/update/' + encodeURIComponent($('#product-id').val());
 
             // AJAX request
             $.ajax({

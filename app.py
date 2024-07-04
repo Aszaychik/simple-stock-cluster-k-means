@@ -137,9 +137,31 @@ def add_product():
     db.session.add(new_product)
     db.session.commit()
 
-    symptoms = Product.query.all()
-    return render_template('data.html', symptoms=symptoms)
+    products = Product.query.all()
+    return render_template('data.html', products=products)
 
+@app.route('/data/update/<int:product_id>', methods=['POST'])
+@login_required
+def update_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    if request.method == 'POST':
+        product.nama = request.form['product-nama']
+        product.stok_awal = request.form['product-stok-awal']
+        product.stok_terjual = request.form['product-stok-terjual']
+        product.harga = request.form['product-harga']
+        db.session.commit()
+        flash('Product updated successfully', 'success')
+        return redirect(url_for('data_table'))
+    return redirect(url_for('data_table'))
+
+@app.route('/data/delete/<int:product_id>')
+@login_required
+def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    flash('Product deleted successfully', 'success')
+    return redirect(url_for('data_table'))
 
 @app.route('/klasterisasi')
 def klasterisasi_page():
