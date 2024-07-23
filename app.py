@@ -231,7 +231,7 @@ def cluster():
     df = pd.DataFrame(data, columns=['stok_awal', 'stok_terjual'])
 
     # Perform KMeans clustering
-    kmeans = KMeans(n_clusters=3)
+    kmeans = KMeans(n_clusters=3, random_state=777)
     kmeans.fit(df)
     df['cluster'] = kmeans.labels_
 
